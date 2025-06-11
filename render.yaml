@@ -11,11 +11,11 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: SECRET_KEY
-        sync: false
+        generateValue: true
       - key: ALGORITHM
         value: HS256
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
-        value: "30"
+        value: 30
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
