@@ -1,6 +1,10 @@
-# API de Concesionarias
+# API de Concesionarias 🚗
 
-API REST desarrollada con FastAPI para gestionar concesionarias de vehículos.
+Sistema backend completo para la gestión de concesionarias de vehículos, desarrollado con FastAPI, PostgreSQL y subida de imágenes a Cloudinary. Ideal para proyectos de compra y venta de autos.
+
+Incluye autenticación JWT, control de acceso, administración de vehículos, concesionarias, marcas y carga de imágenes.
+
+Listo para producción o para integrarse con un frontend hecho en React.
 
 ## Características
 
@@ -34,14 +38,14 @@ pip install -r requirements.txt
 
 3. Crear archivo `.env` en la raíz del proyecto:
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/playa_autos
-SECRET_KEY=tu_clave_secreta_para_jwt
+DATABASE_URL=postgresql://<USUARIO>:<CONTRASEÑA>@<HOST>:<PUERTO>/<NOMBRE_BD>
+SECRET_KEY=<TU_CLAVE_SECRETA>
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-CLOUDINARY_CLOUD_NAME=tu_cloud_name
-CLOUDINARY_API_KEY=tu_api_key
-CLOUDINARY_API_SECRET=tu_api_secret
+CLOUDINARY_CLOUD_NAME=<TU_CLOUD_NAME>
+CLOUDINARY_API_KEY=<TU_API_KEY>
+CLOUDINARY_API_SECRET=<TU_API_SECRET>
 ```
 
 4. Crear la base de datos en PostgreSQL:
@@ -100,3 +104,18 @@ uvicorn app.main:app --reload
 3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abrir un Pull Request 
+
+## 🛠️ Tecnologías utilizadas
+
+- **Python 3.11** – Lenguaje principal del backend  
+- **FastAPI** – Framework moderno y rápido para construir APIs  
+- **PostgreSQL** – Base de datos relacional  
+- **SQLAlchemy** – ORM para interacción con la base de datos  
+- **Cloudinary** – Servicio para almacenamiento de imágenes  
+- **Uvicorn** – Servidor ASGI para correr la aplicación  
+- **JWT (JSON Web Tokens)** – Autenticación y autorización  
+- **Passlib** – Hasheo de contraseñas  
+- **Pydantic** – Validación y serialización de datos  
+- **Render** – Plataforma de despliegue  
+- **CORS Middleware** – Para permitir peticiones desde el frontend  
+- **dotenv** – Carga de variables de entorno desde un archivo `.env`
