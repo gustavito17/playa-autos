@@ -26,6 +26,13 @@ async def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+@router.get("/api/usuarios/me", response_model=schemas.Usuario)
+async def get_current_user_info(
+    current_user: models.Usuario = Depends(auth.get_current_user)
+):
+    """Obtener información del usuario autenticado"""
+    return current_user
+
 @router.post("/usuarios/", response_model=schemas.Usuario)
 async def create_user(user: schemas.UsuarioCreate, db: Session = Depends(get_db)):
     try:
@@ -57,4 +64,4 @@ async def create_user(user: schemas.UsuarioCreate, db: Session = Depends(get_db)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al crear usuario: {str(e)}"
-        ) 
+        )
