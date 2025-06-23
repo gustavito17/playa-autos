@@ -16,8 +16,8 @@ app = FastAPI(
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción, especificar los orígenes permitidos
-    allow_credentials=True,
+    allow_origins=["*"],  # Mantener esto para permitir cualquier origen
+    allow_credentials=False,  # Cambiar de True a False
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -33,4 +33,4 @@ async def root():
     return {
         "message": "Bienvenido a la API de Concesionarias",
         "documentación": "/docs"
-    } 
+    }
