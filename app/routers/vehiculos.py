@@ -95,23 +95,59 @@ async def delete_vehiculo(
 @router.post("/{vehiculo_id}/imagenes/", response_model=schemas.Imagen)
 async def upload_vehiculo_image(
     vehiculo_id: int,
-    file: UploadFile = File(...),
+    file: UploadFile,
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(auth.get_current_user)
 ):
-    db_vehiculo = db.query(models.Vehiculo).filter(models.Vehiculo.id == vehiculo_id).first()
-    if db_vehiculo is None:
-        raise HTTPException(status_code=404, detail="Vehículo no encontrado")
-    
-    if current_user.concesionaria_id != db_vehiculo.concesionaria_id:
-        raise HTTPException(
-            status_code=403,
-            detail="No tienes permiso para añadir imágenes a este vehículo"
-        )
-    
-    image_url = await upload_image(file)
-    db_imagen = models.Imagen(url=image_url, vehiculo_id=vehiculo_id)
-    db.add(db_imagen)
-    db.commit()
-    db.refresh(db_imagen)
-    return db_imagen 
+    try:
+        # Validar el archivo
+        if not file.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="El archivo debe ser una imagen")
+            
+        # Verificar tamaño del archivo (max 5MB)
+        file_size = 0
+        file.file.seek(0, 2)  # Ir al final del archivo
+        file_size = file.file.tell()  # Obtener tamaño
+        file.file.seek(0)  # Volver al inicio
+        
+        if file_size > 5 * 1024 * 1024:  # 5MB
+            raise HTTPException(status_code=400, detail="El archivo es demasiado grande")
+
+        # Verificar vehículo
+        print(f"Buscando vehículo con ID: {vehiculo_id}")
+        db_vehiculo = db.query(models.Vehiculo).filter(models.Vehiculo.id == vehiculo_id).first()
+        if db_vehiculo is None:
+            raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+        
+        # Verificar permisos
+        print(f"Verificando permisos - Usuario concesionaria_id: {current_user.concesionaria_id}, Vehículo concesionaria_id: {db_vehiculo.concesionaria_id}")
+        if current_user.concesionaria_id != db_vehiculo.concesionaria_id:
+            raise HTTPException(
+                status_code=403,
+                detail="No tienes permiso para añadir imágenes a este vehículo"
+            )
+        
+        # Subir imagen
+        print("Intentando subir imagen a Cloudinary")
+        image_url = await upload_image(file)
+        print(f"Imagen subida exitosamente: {image_url}")
+        
+        # Guardar en base de datos
+        print("Guardando información en la base de datos")
+        db_imagen = models.Imagen(url=image_url, vehiculo_id=vehiculo_id)
+        db.add(db_imagen)
+        db.commit()
+        db.refresh(db_imagen)
+        print("Imagen guardada exitosamente en la base de datos")
+        
+        return db_imagen
+        
+    except HTTPException as he:
+        # Re-lanzar excepciones HTTP
+        raise he
+    except Exception as e:
+        print(f"Error inesperado: {str(e)}")
+        # Log el error completo
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error al procesar la imagen: {str(e)}")
