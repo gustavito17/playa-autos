@@ -151,3 +151,52 @@ async def upload_vehiculo_image(
         import traceback
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error al procesar la imagen: {str(e)}")
+
+
+@router.delete("/imagenes/{imagen_id}")
+async def delete_vehiculo_image(
+    imagen_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(auth.get_current_user)
+):
+    try:
+        # Buscar la imagen
+        db_imagen = db.query(models.Imagen).filter(models.Imagen.id == imagen_id).first()
+        if db_imagen is None:
+            raise HTTPException(status_code=404, detail="Imagen no encontrada")
+        
+        # Buscar el vehículo para verificar permisos
+        db_vehiculo = db.query(models.Vehiculo).filter(models.Vehiculo.id == db_imagen.vehiculo_id).first()
+        if db_vehiculo is None:
+            raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+        
+        # Verificar permisos
+        if current_user.concesionaria_id != db_vehiculo.concesionaria_id:
+            raise HTTPException(
+                status_code=403,
+                detail="No tienes permiso para eliminar esta imagen"
+            )
+        
+        # Extraer public_id de la URL de Cloudinary para eliminar la imagen
+        # URL típica: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/public_id.jpg
+        url_parts = db_imagen.url.split('/')
+        if len(url_parts) >= 2:
+            public_id = url_parts[-1].split('.')[0]  # Obtener el nombre sin extensión
+            
+            # Eliminar de Cloudinary
+            from ..cloudinary_utils import delete_image
+            await delete_image(public_id)
+        
+        # Eliminar de la base de datos
+        db.delete(db_imagen)
+        db.commit()
+        
+        return {"message": "Imagen eliminada exitosamente"}
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error al eliminar imagen: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error al eliminar la imagen: {str(e)}")
