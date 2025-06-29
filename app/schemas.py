@@ -41,7 +41,11 @@ class TokenData(BaseModel):
     email: Optional[str] = None
 
 # Esquemas para Marca
+
 class MarcaBase(BaseModel):
+    nombre: str
+
+class MarcaUpdate(BaseModel):
     nombre: str
 
 class MarcaCreate(MarcaBase):

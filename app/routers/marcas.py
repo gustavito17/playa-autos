@@ -34,9 +34,40 @@ async def get_marcas(
     marcas = db.query(models.Marca).offset(skip).limit(limit).all()
     return marcas
 
+
 @router.get("/{marca_id}", response_model=schemas.Marca)
 async def get_marca(marca_id: int, db: Session = Depends(get_db)):
     db_marca = db.query(models.Marca).filter(models.Marca.id == marca_id).first()
     if db_marca is None:
         raise HTTPException(status_code=404, detail="Marca no encontrada")
-    return db_marca 
+    return db_marca
+
+# Endpoint para editar una marca
+@router.put("/{marca_id}", response_model=schemas.Marca)
+async def update_marca(
+    marca_id: int,
+    marca: schemas.MarcaUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(auth.get_current_user)
+):
+    db_marca = db.query(models.Marca).filter(models.Marca.id == marca_id).first()
+    if db_marca is None:
+        raise HTTPException(status_code=404, detail="Marca no encontrada")
+    db_marca.nombre = marca.nombre
+    db.commit()
+    db.refresh(db_marca)
+    return db_marca
+
+# Endpoint para eliminar una marca
+@router.delete("/{marca_id}")
+async def delete_marca(
+    marca_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(auth.get_current_user)
+):
+    db_marca = db.query(models.Marca).filter(models.Marca.id == marca_id).first()
+    if db_marca is None:
+        raise HTTPException(status_code=404, detail="Marca no encontrada")
+    db.delete(db_marca)
+    db.commit()
+    return {"detail": "Marca eliminada"}
